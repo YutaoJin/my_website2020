@@ -1,0 +1,283 @@
+---
+title: "Merger Arbitrage"
+author: "Yutao Jin"
+date: "16 October 2020"
+output:
+  html_document:
+    theme: flatly
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(ggthemes)
+library(readxl)
+library(ggrepel)
+library(skimr)
+library(here)
+```
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("C:/Data Analytics/my_website/content/projects/ma/ma.jpg")
+```
+
+> Merger Arbitrage is an event driven strategy, whose returns are dependent on the completion of merger/acquisition. At the time of the deal announcement, there is a risk that the deal will not be finalised. For hedge fund managers, analysing which kind of deals are more likely to succeed is very important. In this blog, I am going to analyse the success rate of deals within different categories. I mainly focus on type of bids, payment methods, type of deals, value of transaction, and event firms' industries.
+
+# Introduction, Data, and Methods
+
+Merger Arbitrage is a form of risk arbitrage. Event driven portfolio managers at hedge funds will attempt to exploit the price inefficiency around announcement based on their convictions on whether the deal will go through or not. If the manager believes the deal will go through, they will long the target and short acquirer.
+
+I obtain data on U.S. Corporate takeovers for the period 2000 to 2017 from the Thomson Financial SDC and the annual information about all U.S. public firms during the same time period from Wharton Research Services (WRDS). Although in this blog I only analyse the success rate of different types of deals, in further research, I am going to examine the short-term stock-market performance around the takeover event. Therefore, I only keep deals that both acquirer and target firm are public firms. I also exclude all financial (SIC-4 code 6000~6999) and utilities (SIC-4 code 4900~4999) firms from the sample, considering the uniqueness in financial reports and highly constrained takeover within two industries. Given the information, the initial sample consists of 2,619 paired M&A deals.
+
+```{r}
+masample<-read_csv("C:/Data/MA_sample.csv")
+glimpse(masample)
+```
+
+# Data Wrangling and Exploratory Data Analysis
+
+## Number of deals
+
+First, let's see number of deals and successful deals in terms of years.
+
+```{r}
+masample<-masample %>%
+  mutate(success=case_when(
+    is.na(DateEffective) ~ 0,
+    TRUE ~ 1
+  )) 
+  
+masample %>%
+  group_by(year) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success)) %>%
+  arrange(desc(year))
+```
+
+## Type of bids
+
+Generally, there are four different types of bids: friendly, hostile, neutral, and unsolicited. Friendly bids usually when the board agrees to the proposed deal and recommends it to shareholders. Hostile bids are when the board of directors block the deal and the acquirer goes directly to the shareholders either, to buy their shares or to persuade the shareholders to use their votes to overpower the board. In our sample, 2,323 deals (89%) are friendly. Therefore, we categorize type of bids into friendly and others. Figure 1 shows 90% friendly deals are eventually successful while only 12% other type of bids succeed. 
+
+```{r}
+
+table(masample$year,masample$attitude)
+
+# 1~5: Friendly, Hostile, Neutral, Unsolicited, Unapplicable
+
+```
+
+```{r,fig.height=4,fig.width=5}
+masample<-masample %>%
+  mutate(type_of_bids=case_when(
+    attitude==1 ~ "friendly",
+    TRUE ~ "others"
+  ))
+
+masample %>%
+  group_by(type_of_bids) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %>%
+  ggplot(aes(x=type_of_bids,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),"%"),y=success_rate+0.05))+
+  labs(title="Figure 1: success rate of M&A deals in terms of type of bids",
+       x="Type of bids",
+       y="Success rate")+
+  theme_minimal(base_size=9)
+
+```
+
+## Payment methods
+
+Target companies can be paid for in cash or a combination of cash and equity payment (shares) or full out shares. We seek to analyse if there is any excess return to be had from a different type of payment. Figure 2 shows the success rate for deals paid in cash, shares, or hybrid is 89%, 74%, and 85%, respectively. This one does not lead to an obvious conclusion. 
+
+```{r}
+
+masample<-masample %>%
+  mutate(payment=case_when(
+    PctCash==100 ~ "cash",
+    PctStock==100 ~ "stock",
+    TRUE ~ "hybrid"
+  ))
+
+table(masample$year,masample$payment)
+  
+
+```
+
+```{r,fig.width=5,fig.height=4}
+
+masample %>%
+  group_by(payment) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %>%
+  ggplot(aes(x=payment,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),"%"),y=success_rate+0.05))+
+  labs(title="Figure 2: success rate of M&A deals in terms of payment method",
+       x="Payment method",
+       y="Success rate")+
+  theme_minimal(base_size=9)
+
+
+```
+
+## Type of deal
+
+There are three types of deals: acquisition, major interest purchase, and merger. An acquisition occurs when an acquirer targets another company to buy. A majority interest purchase is similar to an acquisition in the sense that a target company is being purchased, but only for the majority of their shares, rather than buying the entire company. In a merger, two companies agree to merge together to become one. We are analysing if the probability of a deal being closed is greater than in an acquisition, majority interest purchase, or a merger. Figure 3 shows the success rate of acquisition, majority interest purchase, and merger is 64%, 75%, and 82%, respectively.
+
+```{r,fig.width=5,fig.height=4}
+masample %>%
+  mutate(type_of_deal=case_when(
+    form==1 ~ "acquisition",
+    form==2 ~ "majority interest purchase",
+    form==3 ~ "merger"
+  )) %>%
+  group_by(type_of_deal) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %>%
+  ggplot(aes(x=type_of_deal,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),"%"),y=success_rate+0.05))+
+  labs(title="Figure 3: success rate of M&A deals in terms of deal types",
+       x="Type of deals",
+       y="Success rate")+
+  theme_minimal(base_size=9)
+```
+
+## Value of transaction
+
+An intuition is that transaction with higher value is more likely to fail. We are going to analyse if there is relationship between success rate and value of transaction. However, our pictorial analysis, as shown in figure 4, does not find obvious difference in success rate among different quartile of transaction value.
+
+```{r,fig.width=5,fig.height=4}
+
+masample %>%
+  mutate(value=ntile(TransactionV,4)) %>%
+  group_by(value) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %>%
+  ggplot(aes(x=value,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),"%"),y=success_rate+0.05))+
+  labs(title="Figure 4: success rate of M&A deals in terms of value of transaction",
+       x="Quartile of transaction value",
+       y="Success rate")+
+  theme_minimal(base_size=9)
+
+
+```
+
+## Industries
+
+Another hypothesis is event firms’ industries may correlate to success rate. We split our sample into two groups. In the first group, acquirer and target firm are from the same industry; in the second group, acquirer and target firm are from different industries. However, we haven’t found obvious difference in success rate between these two groups.
+
+```{r,fig.width=5,fig.height=4}
+masample %>%
+  mutate(targetindustry=substr(TargetSic,1,3),
+         acqindustry=substr(AcqSic,1,3),
+         industry=case_when(
+           targetindustry==acqindustry ~ "Yes",
+           TRUE ~ "No"
+         )) %>%
+  group_by(industry) %>%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %>%
+  ggplot(aes(x=industry,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),"%"),y=success_rate+0.05))+
+  labs(title="Figure 5: success rate of M&A deals in terms of industries",
+       x="Whether acquirer and target are from the same industry?",
+       y="Success rate")+
+  theme_minimal(base_size=9)
+```
+
+
+To sum up results above, we find that: (1) friendly bids are more likely to succeed than hostile ones; (2) payment method and type of deals have something to do with success rate; (3) no obvious relationship between value of transaction, industries and success rate.
+
+
+# Regression
+
+Apart from pictorial analysis, I quantitatively analyse the relationship between these selected factors and success rate. The logit regression model is specified as follow:
+
+$$ l=ln\frac{P(Y=1)}{P(Y=0)}=\alpha+\beta_1\ typeofbids+\beta_2\ paymentmethod+\beta_3\ typeofdeals+\varepsilon $$
+
+Where $P\left(Y=1\right)$ is the success rate and $P\left(Y=0\right)$ is the failure rate such that $P\left(Y=1\right)+P\left(Y=0\right)=1$. In this linear model, the dependent variable is $\ln{\left(\frac{P\left(Y=1\right)}{P\left(Y=0\right)}\right)}$, where $\frac{P\left(Y=1\right)}{P\left(Y=0\right)}$ is usually called as odds ratio. Variables typeofbids, paymentmethod, and typeofdeals denote type of bids, payment method, and type of deals respectively. 
+
+```{r}
+
+masample<-masample %>%
+    mutate(success=case_when(
+    is.na(DateEffective) ~ 0,
+    TRUE ~ 1
+  )) %>%
+    mutate(type_of_bids=case_when(
+    attitude==1 ~ 1,
+    TRUE ~ 0
+  )) %>%
+    mutate(payment=case_when(
+    PctCash==100 ~ 2,
+    PctStock==100 ~ 1,
+    TRUE ~ 0
+  )) %>%
+    mutate(type_of_deal=case_when(
+    form==1 ~ 0,
+    form==2 ~ 1,
+    form==3 ~ 2
+  ))
+    
+```
+
+
+```{r}
+
+logitmodel<-glm(success ~ type_of_bids+payment+type_of_deal,data=masample,family="binomial")
+
+summary(logitmodel)
+
+```
+
+```{r}
+# Odds ratios and 95% CI
+exp(cbind(OR = coef(logitmodel), confint(logitmodel)))
+```
+
+Results show `typeofbids` and `paymentmethod` are 1% significantly correlated to the success rate, and coefficient between type of deals and success rate is significant at 5% level. Specifically, a friendly merger paid in cash is more likely to succeed. Among three variables, typeofbids has the most influence on success rate. When typeofbids increase from 0 to 1, namely from a non-friendly bid to a friendly bid, the odds ratio of success increase by 60.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

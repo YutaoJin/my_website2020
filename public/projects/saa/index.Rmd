@@ -1,0 +1,258 @@
+---
+title: "Strategic Asset Allocation"
+author: "Yutao Jin"
+date: "12 October 2020"
+output:
+  html_document:
+    theme: flatly
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(ggthemes)
+library(readxl)
+library(ggrepel)
+```
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("C:/Data Analytics/my_website/content/projects/SAA/saa.png")
+```
+
+
+
+> I am more comfortable with top-down investment style. The first step to construct the portfolio is asset allocation. In this blog, I construct the equities-bonds portfolio and compare traditional 60/40 portfolio with risk parity portfolio. My ideas come from the final question in midterm of Investment Fundamental course which is taught by professor Roberto Gomez Cram. My data comes from [J.P. Morgan Long-Term Capital Market Assumptions](https://am.jpmorgan.com/hk/en/asset-management/adv/insights/portfolio-insights/long-term-capital-market-assumptions/).
+
+
+# Data initialization
+
+```{r load-assets-data}
+assets <- read_excel("C:/Data Analytics/my_website/content/projects/SAA/assets_risk_return.xlsx")
+glimpse(assets)
+```
+
+```{r,fig.width=8}
+
+# To make sure the right order
+assets$Class<-factor(assets$Class,levels=c("Fixed Income","Equities","Alternatives"))
+
+# Create the mean-variance plot
+assets %>%
+  ggplot(aes(x=Annual_Volatility,y=Expected_Return,colour=Class))+
+  geom_point(size=1)+
+  geom_text_repel(aes(x=Annual_Volatility,y=Expected_Return,label=Assets),size=1.8,colour="Black")+
+  scale_colour_hue(NULL)+
+  labs(title="Risk and return characteristics of different asset classes",
+       subtitle="Based on long-term market assumption",
+       x="Volatility",
+       y="Compound return (%)",
+       caption="Source: LTCMAs, J.P. Morgan Asset Management Multi-Asset Solutions; data as of April 2020.")+
+  theme_minimal(base_size=8)
+
+
+```
+
+# Traditional 60/40 portfolio
+
+The ultimate purpose of asset allocation is to diversify risks. The simplest way to diversify is to allocate between equities and bonds. I first calculate the portfolio that only contains equities and bonds, based on AC World Equity and World Government Bonds hedged. To calculate the portfolio volatility, we need correlation among different assets, so I first load the covariance data.
+
+```{r}
+# Load covariance data
+covariance <- read_excel("C:/Data Analytics/my_website/content/projects/SAA/assets_covariance.xlsx")
+glimpse(covariance)
+```
+
+```{r}
+# mean return of asset
+r_equities=assets[assets$Assets=="AC World Equity","Expected_Return"]
+r_bonds=assets[assets$Assets=="World Government Bonds hedged","Expected_Return"]
+
+# standard deviation of portfolio
+sigma_equities=assets[assets$Assets=="AC World Equity","Annual_Volatility"]
+sigma_bonds=assets[assets$Assets=="World Government Bonds hedged","Annual_Volatility"]
+cov_equities_bonds=covariance[covariance$Assets=="AC World Equity","World Government Bonds hedged"]
+
+```
+
+
+```{r}
+
+# Construct equities-bonds portfolio 
+i=0
+while(i<=1){
+  r=r_equities*i+r_bonds*(1-i)
+  sigma=sqrt(i^2*sigma_equities^2+(1-i)^2*sigma_bonds^2+i*(1-i)*2*cov_equities_bonds)
+  assets<-rbind(assets,data.frame(Assets=paste(round(i*100),"/",round(100-i*100)),Class="Portfolio",Expected_Return=r,Annual_Volatility=sigma))
+  i=i+0.1
+}
+
+```
+
+
+The traditional 60/40 portfolio - the mix of 60% equities and 40% bonds - has been a mainstay of investment strategy for decades. Let's see 60/40 portfolio's risk-return profile.
+
+```{r}
+# Filter necessary data
+equities_bonds<-assets %>%
+  filter(Class=="Portfolio"|
+           Assets=="AC World Equity"|
+           Assets=="World Government Bonds hedged")
+
+# Create the plot
+plot1<-ggplot(equities_bonds,aes(x=Annual_Volatility,y=Expected_Return))+
+  
+  # Line of efficient frontier
+  geom_line()+
+  
+  # Point of 60/40 portfolio, equities, and bonds
+  geom_point(data=equities_bonds[equities_bonds$Assets=="60 / 40",],size=3,colour="red")+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="AC World Equity",],size=2)+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="World Government Bonds hedged",],size=2)+
+  
+  # Add label to points
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="60 / 40",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="AC World Equity",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black")+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="World Government Bonds hedged",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",hjust=-0.05)+
+  
+  # Set title, and axis label
+  labs(title="Equities-Bonds Portfolio",
+       x="Volatility",
+       y="Compounded return (%)")+
+  theme_minimal(base_size=9)
+
+plot1
+```
+
+# Risk Parity
+
+After 2008 financial crisis, Risk Parity become very popular, given that it performed better during the crisis than more traditional portfolios. I thus also setting up a Risk Parity portfolio of equities and bonds where the weight on each asset class is inversely proportional to its volatility. 
+
+Denote w1 as proportion of equities and w2 as proportion of bonds. We have w1+w2=1. To construct the risk parity portfolio, we have w1:w2=volatility(bonds):volatility(equities).
+
+
+```{r}
+
+# Solve the equations
+w2=1/(1+sigma_bonds/sigma_equities)
+w1=1-w2
+
+# Calculate portfolio's risk and return
+r=r_equities*w1+r_bonds*w2
+sigma=sqrt(w1^2*sigma_equities^2+w2^2*sigma_bonds^2+w1*w2*2*cov_equities_bonds)
+
+
+# Construct Risk Parity Portfolio
+equities_bonds<-rbind(equities_bonds,data.frame(Assets="Unlevered Risk Parity",Class="Portfolio",Expected_Return=r,Annual_Volatility=sigma))
+
+```
+
+
+Let's see Risk Parity Portfolio's risk-return profile:
+
+```{r}
+plot2<-plot1+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="Unlevered Risk Parity",],size=3,colour="blue")+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="Unlevered Risk Parity",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",hjust=-0.05)
+
+plot2
+```
+
+Next I add leverage to unlevered Risk Parity Portfolio with use of riskless borrowing. Firstly, add riskfree assets to the dataframe.
+
+
+```{r}
+
+# According to J.P. Morgan's long term market assumption, i set riskfree rate to 1.6%, with no volatility
+equities_bonds<-rbind(equities_bonds,data.frame(Assets="Cash",Class="Riskfree",Expected_Return=1.60,Annual_Volatility=0))
+```
+
+
+```{r}
+# Add `cash` to the plot
+plot3<-plot2+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="Cash",],size=2,colour="black")+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="Cash",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",hjust=-0.05)
+
+plot3
+```
+
+```{r}
+
+# Add leverage to Risk Parity portfolio to get the same standard deviation as the 60/40 portfolio
+levered_sigma=equities_bonds[equities_bonds$Assets=="60 / 40","Annual_Volatility"]
+unlevered_sigma=equities_bonds[equities_bonds$Assets=="Unlevered Risk Parity","Annual_Volatility"]
+leverage=levered_sigma/unlevered_sigma
+
+# Calculate levered annualized return
+unlevered_r=equities_bonds[equities_bonds$Assets=="Unlevered Risk Parity","Expected_Return"]
+rf=equities_bonds[equities_bonds$Assets=="Cash","Expected_Return"]
+levered_r=unlevered_r*leverage-(leverage-1)*rf
+
+```
+
+```{r}
+# Add portfolio to dataframe
+equities_bonds<-rbind(equities_bonds,data.frame(Assets="levered Risk Parity",Class="Portfolio",Expected_Return=levered_r,Annual_Volatility=levered_sigma))
+```
+
+```{r}
+# Add point to plot
+plot4<-plot3+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="levered Risk Parity",],size=3,colour="blue")+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="levered Risk Parity",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",hjust=-0.05)
+
+plot4
+```
+
+As we can see, in this case, risk parity is no better than 60/40 portfolio. With the same volatility, risk parity generate less return. When adding leverage to the portfolio, Sharpe ratio does not change. Only when unlevered risk parity portfolio has a higher Sharpe ratio than 60/40 portfolio, levered risk parity is more attractive than 60/40. However, Sharpe ratio is not the only evaluation indicator of asset allocation. When both portfolios are on the efficient frontier, Which portfolio is better depends on investor's utility. 
+
+I also want to caution that all these strategies are actually built on mathematical model with
+assumptions. I use mean and standard deviation as the proxy for risk and return and I
+assume these statistics (mean, standard deviation, and correlation) are stable. This is far
+from reality. When the correlation between equities and bonds become stronger, the risk parity strategy may fall. [When the pandemic outbreak in April, risk-parity investment strategy unravelled with both bonds and stocks plummetted](https://www.economist.com/finance-and-economics/2020/04/25/how-risk-parity-investment-strategies-unravelled)
+
+Now let's come back to the 60/40 portfolio. The increasing correlation between stocks and bonds is also the shortcoming of this strategy. Moreover, when covid-19 outbreak, we have entered a new normal with low yield. In this case, [low bond yields will not help offset a poor performance from the share market](https://www.ft.com/content/fdb793a4-712e-477f-9a81-7f67aefda21a)
+
+Under such circumstances,  I see two mainstreams to improve asset allocation strategy.
+One is to switch from “asset allocation” to “factor allocation”. The other is to diversify into
+alternatives. These assets have low correlation with traditional assets. On the one hand,
+Adding alternatives to 60/40 portfolio will improve its risk-return profile. On the other hand,
+diversifying into alternatives may protect portfolio from systematic market crash.
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("C:/Data Analytics/my_website/content/projects/SAA/alternatives.JPG")
+```
+
+# Reference
+
+[1] Jennifer Bender, Jerry Le Sun, and Ric Thomas, “Asset Allocation vs. Factor Allocation – Can we Build a Unified Method?”, The Journal of Portfolio Management, 2019, vol. 45, no. 2, pp. 9-22.
+
+[2]  ["How risk-parity investment strategies unravelled"](https://www.economist.com/finance-and-economics/2020/04/25/how-risk-parity-investment-strategies-unravelled), The Economist, 25 April 2020 edition.
+
+[3] Michael Mackenzie, ["Investors wonder if the 60/40 portfolio has a future"](https://www.ft.com/content/fdb793a4-712e-477f-9a81-7f67aefda21a), Financial Times, 22 September 2020.
+
+[4] J.P. Morgan Asset Management, ["Long-term capital market assumptions"](https://am.jpmorgan.com/hk/en/asset-management/adv/insights/portfolio-insights/long-term-capital-market-assumptions/), 30 September 2020.
+
+
+
+
+

@@ -1,0 +1,482 @@
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Your name">
+	<meta name="generator" content="Hugo 0.75.1" />
+	<title>Merger Arbitrage &middot; Portfolio website for Yutao Jin</title>
+	<!-- Stylesheets -->
+	
+	<link rel="stylesheet" href="/css/main.css"/>
+	
+	
+
+	
+
+	<!-- Custom Fonts -->
+	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
+
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+</head>
+
+    <body>
+
+    <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Header -->
+    <header id="header" class="alt">
+        <a href="/" class="logo"><strong>Thomas</strong> <span>Portfolio Website</span></a>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+<!-- Menu -->
+    <nav id="menu">
+        <ul class="links">
+            
+                <li><a href="/">Home</a></li>
+            
+                <li><a href="/blogs">Blogs</a></li>
+            
+                <li><a href="/blogs/ipsum">Generic Blog</a></li>
+            
+                <li><a href="/elements.html">Elements</a></li>
+            
+
+        </ul>
+        <ul class="actions vertical">
+            
+                <li><a href="/blogs" class="button special fit">Get Started</a></li>
+            
+            
+                <li><a href="/" class="button fit">Log In</a></li>
+            
+        </ul>
+    </nav>
+
+        <!-- Main -->
+            <div id="main" class="alt">
+
+                
+                    <section id="one">
+                        <div class="inner">
+                            <header class="major">
+                                <h1>Merger Arbitrage</h1>
+                            </header>
+                            
+                            
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p><img src="ma.jpg" width="100%" style="display: block; margin: auto;" /></p>
+<blockquote>
+<p>Merger Arbitrage is an event driven strategy, whose returns are dependent on the completion of merger/acquisition. At the time of the deal announcement, there is a risk that the deal will not be finalised. For hedge fund managers, analysing which kind of deals are more likely to succeed is very important. In this blog, I am going to analyse the success rate of deals within different categories. I mainly focus on type of bids, payment methods, type of deals, value of transaction, and event firms’ industries.</p>
+</blockquote>
+<div id="introduction-data-and-methods" class="section level1">
+<h1>Introduction, Data, and Methods</h1>
+<p>Merger Arbitrage is a form of risk arbitrage. Event driven portfolio managers at hedge funds will attempt to exploit the price inefficiency around announcement based on their convictions on whether the deal will go through or not. If the manager believes the deal will go through, they will long the target and short acquirer.</p>
+<p>I obtain data on U.S. Corporate takeovers for the period 2000 to 2017 from the Thomson Financial SDC and the annual information about all U.S. public firms during the same time period from Wharton Research Services (WRDS). Although in this blog I only analyse the success rate of different types of deals, in further research, I am going to examine the short-term stock-market performance around the takeover event. Therefore, I only keep deals that both acquirer and target firm are public firms. I also exclude all financial (SIC-4 code 6000~6999) and utilities (SIC-4 code 4900~4999) firms from the sample, considering the uniqueness in financial reports and highly constrained takeover within two industries. Given the information, the initial sample consists of 2,619 paired M&amp;A deals.</p>
+<pre class="r"><code>masample&lt;-read_csv(&quot;C:/Data/MA_sample.csv&quot;)
+glimpse(masample)</code></pre>
+<pre><code>## Rows: 2,598
+## Columns: 74
+## $ DealNum           &lt;dbl&gt; 3.20e+09, 3.20e+09, 3.19e+09, 3.19e+09, 3.19e+09,...
+## $ DateAnnounced     &lt;chr&gt; &quot;12/26/2017&quot;, &quot;12/23/2017&quot;, &quot;12/18/2017&quot;, &quot;12/18/...
+## $ DateEffective     &lt;chr&gt; &quot;02/13/2018&quot;, NA, NA, &quot;01/31/2018&quot;, NA, NA, NA, &quot;...
+## $ DateUnconditional &lt;chr&gt; &quot;02/13/2018&quot;, NA, NA, &quot;01/31/2018&quot;, NA, NA, NA, &quot;...
+## $ DateWithdrawn     &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;01/23/2018&quot;, NA, NA, &quot;11...
+## $ TargetName        &lt;chr&gt; &quot;Sucampo Pharmaceuticals Inc&quot;, &quot;XPO Logistics Inc...
+## $ targetcusip6      &lt;chr&gt; &quot;864909&quot;, &quot;983793&quot;, &quot;167250&quot;, &quot;03211L&quot;, &quot;833551&quot;,...
+## $ TargetSic         &lt;dbl&gt; 2834, 4731, 1799, 2096, 2052, 6021, 3674, 3841, 6...
+## $ TargetNation      &lt;chr&gt; &quot;United States&quot;, &quot;United States&quot;, &quot;United States&quot;...
+## $ TargetState       &lt;chr&gt; &quot;Maryland&quot;, &quot;Connecticut&quot;, &quot;Texas&quot;, &quot;Texas&quot;, &quot;Nor...
+## $ TargetImmParent   &lt;chr&gt; &quot;Sucampo Pharmaceuticals Inc&quot;, &quot;XPO Logistics Inc...
+## $ TargetImmCusip    &lt;chr&gt; &quot;864909&quot;, &quot;983793&quot;, &quot;167250&quot;, &quot;03211L&quot;, &quot;833551&quot;,...
+## $ TargetUltParent   &lt;chr&gt; &quot;Sucampo Pharmaceuticals Inc&quot;, &quot;XPO Logistics Inc...
+## $ TargetUltCusip    &lt;chr&gt; &quot;864909&quot;, &quot;983793&quot;, &quot;167250&quot;, &quot;03211L&quot;, &quot;833551&quot;,...
+## $ AcqName           &lt;chr&gt; &quot;Mallinckrodt plc&quot;, &quot;Home Depot Inc&quot;, &quot;McDermott ...
+## $ acqcusip6         &lt;chr&gt; &quot;G5785G&quot;, &quot;437076&quot;, &quot;580037&quot;, &quot;427866&quot;, &quot;134429&quot;,...
+## $ AcqSic            &lt;dbl&gt; 2834, 5211, 8711, 2066, 2032, 6021, 3674, 3841, 5...
+## $ AcqNation         &lt;chr&gt; &quot;United Kingdom&quot;, &quot;United States&quot;, &quot;United States...
+## $ AcqState          &lt;chr&gt; &quot;Foreign&quot;, &quot;Georgia&quot;, &quot;Texas&quot;, &quot;Pennsylvania&quot;, &quot;N...
+## $ AcqImmParent      &lt;chr&gt; &quot;Mallinckrodt plc&quot;, &quot;Home Depot Inc&quot;, &quot;McDermott ...
+## $ AcqImmCusip       &lt;chr&gt; &quot;G5785G&quot;, &quot;437076&quot;, &quot;580037&quot;, &quot;427866&quot;, &quot;134429&quot;,...
+## $ AcqUltParent      &lt;chr&gt; &quot;Mallinckrodt plc&quot;, &quot;Home Depot Inc&quot;, &quot;McDermott ...
+## $ AcqUltCusip       &lt;chr&gt; &quot;G5785G&quot;, &quot;437076&quot;, &quot;580037&quot;, &quot;427866&quot;, &quot;134429&quot;,...
+## $ PctAcq            &lt;dbl&gt; 100, NA, NA, 100, NA, NA, NA, 100, NA, NA, NA, 10...
+## $ PctAfter          &lt;dbl&gt; 100, NA, NA, 100, NA, NA, NA, 100, NA, NA, NA, 10...
+## $ PctSought         &lt;dbl&gt; 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,...
+## $ PctAcqIss         &lt;dbl&gt; NA, NA, 46.89, NA, NA, 23.97, NA, NA, 21.24, NA, ...
+## $ PctAnnounce       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ PctPrior          &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ PctVote           &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ price             &lt;dbl&gt; 18.00, NA, 18.37, 12.00, 50.00, 40.81, 7.05, 24.0...
+## $ TransactionV      &lt;dbl&gt; 882.2, NA, NA, 921.0, NA, 301.2, 273.4, 611.5, NA...
+## $ EnterpriseV       &lt;dbl&gt; NA, NA, NA, NA, NA, 390, 204, 661, NA, NA, NA, NA...
+## $ EquityV           &lt;dbl&gt; 872.7, NA, NA, 921.0, NA, 301.2, 273.4, 611.5, NA...
+## $ TargetFees        &lt;dbl&gt; 18.50, NA, NA, 21.50, 37.00, NA, NA, 7.90, 100.00...
+## $ AcqFees           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, 116, NA, NA, NA, ...
+## $ TargetPr1Prior    &lt;dbl&gt; 17.00, 90.01, 20.93, 7.00, 44.42, 35.34, 5.60, 16...
+## $ Premium1Prior     &lt;dbl&gt; 6, NA, 3, 71, 13, 15, 26, 50, 30, NA, NA, 48, 27,...
+## $ InitialPrSh       &lt;dbl&gt; 18.00, NA, 18.37, 12.00, 50.00, 40.81, 7.05, 24.0...
+## $ PctPrChange       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ TenderDate        &lt;chr&gt; &quot;01/16/2018&quot;, NA, NA, &quot;01/02/2018&quot;, NA, NA, NA, N...
+## $ TenderOrigExp     &lt;chr&gt; &quot;02/13/2018&quot;, NA, NA, &quot;01/17/2018&quot;, NA, NA, NA, N...
+## $ TenderExp         &lt;chr&gt; &quot;02/13/2018&quot;, NA, NA, &quot;01/30/2018&quot;, NA, NA, NA, N...
+## $ TenderCommon      &lt;dbl&gt; 47.2, NA, NA, 38.4, NA, NA, NA, NA, NA, NA, NA, 9...
+## $ MinSought         &lt;dbl&gt; 23.6, NA, NA, 38.4, NA, NA, NA, NA, NA, NA, NA, 5...
+## $ ROA               &lt;dbl&gt; NA, 0.10, NA, 0.10, 0.07, 0.02, NA, NA, 0.07, 0.1...
+## $ PctCash           &lt;dbl&gt; 100.0, NA, NA, 100.0, 100.0, NA, 100.0, NA, 69.7,...
+## $ PctStock          &lt;dbl&gt; NA, NA, 100.0, NA, NA, 100.0, NA, NA, 30.3, NA, N...
+## $ PctOther          &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N...
+## $ PctUnknown        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 100, NA, NA, NA, NA, ...
+## $ NumBidders        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ AcqPr1Prior       &lt;dbl&gt; 23.32, 188.13, 7.43, 114.14, 49.59, 41.64, 87.15,...
+## $ AcqPr1After       &lt;dbl&gt; 23.28, 188.13, 6.69, 115.45, 48.78, 39.85, 89.35,...
+## $ Exchange          &lt;dbl&gt; NA, NA, 2.47, NA, NA, 0.98, NA, NA, 0.84, NA, NA,...
+## $ Collar            &lt;dbl&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1...
+## $ TargetP           &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ TargetImmP        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ TargetUltP        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ AcqP              &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ AcqImmPublic      &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ AcqUltP           &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1...
+## $ attitude          &lt;dbl&gt; 1, 5, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1...
+## $ AttChange         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0...
+## $ defense           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1...
+## $ tender            &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0...
+## $ GoPrivate         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0...
+## $ MAtype            &lt;dbl&gt; 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1...
+## $ form              &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 3, 3...
+## $ structure         &lt;dbl&gt; 1, 3, 2, 1, 1, 2, 1, 8, 4, 3, 3, 1, 4, 3, 4, 2, 4...
+## $ status            &lt;dbl&gt; 1, 3, 2, 1, 2, 2, 4, 1, 2, 4, 2, 1, 2, 3, 2, 2, 4...
+## $ check             &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1...
+## $ year              &lt;dbl&gt; 2017, 2017, 2017, 2017, 2017, 2017, 2017, 2017, 2...
+## $ targetcusip       &lt;chr&gt; &quot;864909106&quot;, &quot;983793100&quot;, &quot;167250109&quot;, &quot;03211L102...
+## $ acqcusip          &lt;chr&gt; &quot;G5785G107&quot;, &quot;437076102&quot;, &quot;580037109&quot;, &quot;427866108...</code></pre>
+</div>
+<div id="data-wrangling-and-exploratory-data-analysis" class="section level1">
+<h1>Data Wrangling and Exploratory Data Analysis</h1>
+<div id="number-of-deals" class="section level2">
+<h2>Number of deals</h2>
+<p>First, let’s see number of deals and successful deals in terms of years.</p>
+<pre class="r"><code>masample&lt;-masample %&gt;%
+  mutate(success=case_when(
+    is.na(DateEffective) ~ 0,
+    TRUE ~ 1
+  )) 
+  
+masample %&gt;%
+  group_by(year) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success)) %&gt;%
+  arrange(desc(year))</code></pre>
+<pre><code>## # A tibble: 18 x 3
+##     year num_deals successful_deals
+##    &lt;dbl&gt;     &lt;int&gt;            &lt;dbl&gt;
+##  1  2017       114               69
+##  2  2016       124              100
+##  3  2015       153              118
+##  4  2014       120              100
+##  5  2013        90               79
+##  6  2012        95               83
+##  7  2011        78               55
+##  8  2010       101               82
+##  9  2009       112               76
+## 10  2008       134               89
+## 11  2007       165              138
+## 12  2006       179              158
+## 13  2005       150              134
+## 14  2004       157              141
+## 15  2003       154              141
+## 16  2002       133              116
+## 17  2001       222              189
+## 18  2000       317              261</code></pre>
+</div>
+<div id="type-of-bids" class="section level2">
+<h2>Type of bids</h2>
+<p>Generally, there are four different types of bids: friendly, hostile, neutral, and unsolicited. Friendly bids usually when the board agrees to the proposed deal and recommends it to shareholders. Hostile bids are when the board of directors block the deal and the acquirer goes directly to the shareholders either, to buy their shares or to persuade the shareholders to use their votes to overpower the board. In our sample, 2,323 deals (89%) are friendly. Therefore, we categorize type of bids into friendly and others. Figure 1 shows 90% friendly deals are eventually successful while only 12% other type of bids succeed.</p>
+<pre class="r"><code>table(masample$year,masample$attitude)</code></pre>
+<pre><code>##       
+##          1   2   3   4   5
+##   2000 295   5   0   7  10
+##   2001 213   3   0   4   2
+##   2002 124   2   1   5   1
+##   2003 144   4   2   3   1
+##   2004 150   3   0   0   4
+##   2005 141   3   0   5   1
+##   2006 165   3   1   4   6
+##   2007 155   0   0   3   7
+##   2008 105   4   1  12  12
+##   2009  81   1   0   6  24
+##   2010  87   2   0   3   9
+##   2011  63   3   0   6   6
+##   2012  88   0   0   2   5
+##   2013  84   0   0   2   4
+##   2014 101   1   1   6  11
+##   2015 130   2   0   6  15
+##   2016 105   1   0   5  13
+##   2017  92   1   0   4  17</code></pre>
+<pre class="r"><code># 1~5: Friendly, Hostile, Neutral, Unsolicited, Unapplicable</code></pre>
+<pre class="r"><code>masample&lt;-masample %&gt;%
+  mutate(type_of_bids=case_when(
+    attitude==1 ~ &quot;friendly&quot;,
+    TRUE ~ &quot;others&quot;
+  ))
+
+masample %&gt;%
+  group_by(type_of_bids) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %&gt;%
+  ggplot(aes(x=type_of_bids,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),&quot;%&quot;),y=success_rate+0.05))+
+  labs(title=&quot;Figure 1: success rate of M&amp;A deals in terms of type of bids&quot;,
+       x=&quot;Type of bids&quot;,
+       y=&quot;Success rate&quot;)+
+  theme_minimal(base_size=9)</code></pre>
+<p><img src="/projects/ma/index_files/figure-html/unnamed-chunk-5-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="payment-methods" class="section level2">
+<h2>Payment methods</h2>
+<p>Target companies can be paid for in cash or a combination of cash and equity payment (shares) or full out shares. We seek to analyse if there is any excess return to be had from a different type of payment. Figure 2 shows the success rate for deals paid in cash, shares, or hybrid is 89%, 74%, and 85%, respectively. This one does not lead to an obvious conclusion.</p>
+<pre class="r"><code>masample&lt;-masample %&gt;%
+  mutate(payment=case_when(
+    PctCash==100 ~ &quot;cash&quot;,
+    PctStock==100 ~ &quot;stock&quot;,
+    TRUE ~ &quot;hybrid&quot;
+  ))
+
+table(masample$year,masample$payment)</code></pre>
+<pre><code>##       
+##        cash hybrid stock
+##   2000   76    109   132
+##   2001   50     88    84
+##   2002   43     49    41
+##   2003   46     67    41
+##   2004   44     69    44
+##   2005   56     66    28
+##   2006   85     66    28
+##   2007   72     67    26
+##   2008   60     50    24
+##   2009   29     62    21
+##   2010   50     37    14
+##   2011   32     31    15
+##   2012   43     38    14
+##   2013   36     42    12
+##   2014   43     52    25
+##   2015   49     80    24
+##   2016   60     49    15
+##   2017   33     49    32</code></pre>
+<pre class="r"><code>masample %&gt;%
+  group_by(payment) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %&gt;%
+  ggplot(aes(x=payment,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),&quot;%&quot;),y=success_rate+0.05))+
+  labs(title=&quot;Figure 2: success rate of M&amp;A deals in terms of payment method&quot;,
+       x=&quot;Payment method&quot;,
+       y=&quot;Success rate&quot;)+
+  theme_minimal(base_size=9)</code></pre>
+<p><img src="/projects/ma/index_files/figure-html/unnamed-chunk-7-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="type-of-deal" class="section level2">
+<h2>Type of deal</h2>
+<p>There are three types of deals: acquisition, major interest purchase, and merger. An acquisition occurs when an acquirer targets another company to buy. A majority interest purchase is similar to an acquisition in the sense that a target company is being purchased, but only for the majority of their shares, rather than buying the entire company. In a merger, two companies agree to merge together to become one. We are analysing if the probability of a deal being closed is greater than in an acquisition, majority interest purchase, or a merger. Figure 3 shows the success rate of acquisition, majority interest purchase, and merger is 64%, 75%, and 82%, respectively.</p>
+<pre class="r"><code>masample %&gt;%
+  mutate(type_of_deal=case_when(
+    form==1 ~ &quot;acquisition&quot;,
+    form==2 ~ &quot;majority interest purchase&quot;,
+    form==3 ~ &quot;merger&quot;
+  )) %&gt;%
+  group_by(type_of_deal) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %&gt;%
+  ggplot(aes(x=type_of_deal,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),&quot;%&quot;),y=success_rate+0.05))+
+  labs(title=&quot;Figure 3: success rate of M&amp;A deals in terms of deal types&quot;,
+       x=&quot;Type of deals&quot;,
+       y=&quot;Success rate&quot;)+
+  theme_minimal(base_size=9)</code></pre>
+<p><img src="/projects/ma/index_files/figure-html/unnamed-chunk-8-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="value-of-transaction" class="section level2">
+<h2>Value of transaction</h2>
+<p>An intuition is that transaction with higher value is more likely to fail. We are going to analyse if there is relationship between success rate and value of transaction. However, our pictorial analysis, as shown in figure 4, does not find obvious difference in success rate among different quartile of transaction value.</p>
+<pre class="r"><code>masample %&gt;%
+  mutate(value=ntile(TransactionV,4)) %&gt;%
+  group_by(value) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %&gt;%
+  ggplot(aes(x=value,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),&quot;%&quot;),y=success_rate+0.05))+
+  labs(title=&quot;Figure 4: success rate of M&amp;A deals in terms of value of transaction&quot;,
+       x=&quot;Quartile of transaction value&quot;,
+       y=&quot;Success rate&quot;)+
+  theme_minimal(base_size=9)</code></pre>
+<p><img src="/projects/ma/index_files/figure-html/unnamed-chunk-9-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="industries" class="section level2">
+<h2>Industries</h2>
+<p>Another hypothesis is event firms’ industries may correlate to success rate. We split our sample into two groups. In the first group, acquirer and target firm are from the same industry; in the second group, acquirer and target firm are from different industries. However, we haven’t found obvious difference in success rate between these two groups.</p>
+<pre class="r"><code>masample %&gt;%
+  mutate(targetindustry=substr(TargetSic,1,3),
+         acqindustry=substr(AcqSic,1,3),
+         industry=case_when(
+           targetindustry==acqindustry ~ &quot;Yes&quot;,
+           TRUE ~ &quot;No&quot;
+         )) %&gt;%
+  group_by(industry) %&gt;%
+  summarise(num_deals=n(),
+            successful_deals=sum(success),
+            success_rate=successful_deals/num_deals) %&gt;%
+  ggplot(aes(x=industry,y=success_rate))+
+  geom_col(width=0.5)+
+  geom_text(aes(label=paste(round(success_rate*100,2),&quot;%&quot;),y=success_rate+0.05))+
+  labs(title=&quot;Figure 5: success rate of M&amp;A deals in terms of industries&quot;,
+       x=&quot;Whether acquirer and target are from the same industry?&quot;,
+       y=&quot;Success rate&quot;)+
+  theme_minimal(base_size=9)</code></pre>
+<p><img src="/projects/ma/index_files/figure-html/unnamed-chunk-10-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>To sum up results above, we find that: (1) friendly bids are more likely to succeed than hostile ones; (2) payment method and type of deals have something to do with success rate; (3) no obvious relationship between value of transaction, industries and success rate.</p>
+</div>
+</div>
+<div id="regression" class="section level1">
+<h1>Regression</h1>
+<p>Apart from pictorial analysis, I quantitatively analyse the relationship between these selected factors and success rate. The logit regression model is specified as follow:</p>
+<p><span class="math display">\[ l=ln\frac{P(Y=1)}{P(Y=0)}=\alpha+\beta_1\ typeofbids+\beta_2\ paymentmethod+\beta_3\ typeofdeals+\varepsilon \]</span></p>
+<p>Where <span class="math inline">\(P\left(Y=1\right)\)</span> is the success rate and <span class="math inline">\(P\left(Y=0\right)\)</span> is the failure rate such that <span class="math inline">\(P\left(Y=1\right)+P\left(Y=0\right)=1\)</span>. In this linear model, the dependent variable is <span class="math inline">\(\ln{\left(\frac{P\left(Y=1\right)}{P\left(Y=0\right)}\right)}\)</span>, where <span class="math inline">\(\frac{P\left(Y=1\right)}{P\left(Y=0\right)}\)</span> is usually called as odds ratio. Variables typeofbids, paymentmethod, and typeofdeals denote type of bids, payment method, and type of deals respectively.</p>
+<pre class="r"><code>masample&lt;-masample %&gt;%
+    mutate(success=case_when(
+    is.na(DateEffective) ~ 0,
+    TRUE ~ 1
+  )) %&gt;%
+    mutate(type_of_bids=case_when(
+    attitude==1 ~ 1,
+    TRUE ~ 0
+  )) %&gt;%
+    mutate(payment=case_when(
+    PctCash==100 ~ 2,
+    PctStock==100 ~ 1,
+    TRUE ~ 0
+  )) %&gt;%
+    mutate(type_of_deal=case_when(
+    form==1 ~ 0,
+    form==2 ~ 1,
+    form==3 ~ 2
+  ))</code></pre>
+<pre class="r"><code>logitmodel&lt;-glm(success ~ type_of_bids+payment+type_of_deal,data=masample,family=&quot;binomial&quot;)
+
+summary(logitmodel)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = success ~ type_of_bids + payment + type_of_deal, 
+##     family = &quot;binomial&quot;, data = masample)
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -2.302   0.383   0.440   0.504   2.312  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)   -3.1135     0.3666   -8.49   &lt;2e-16 ***
+## type_of_bids   4.0878     0.1980   20.64   &lt;2e-16 ***
+## payment        0.2887     0.0775    3.72   0.0002 ***
+## type_of_deal   0.5125     0.1620    3.16   0.0016 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 2453.5  on 2597  degrees of freedom
+## Residual deviance: 1671.7  on 2594  degrees of freedom
+## AIC: 1680
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code># Odds ratios and 95% CI
+exp(cbind(OR = coef(logitmodel), confint(logitmodel)))</code></pre>
+<pre><code>##                   OR   2.5 %  97.5 %
+## (Intercept)   0.0444  0.0219  0.0924
+## type_of_bids 59.6108 40.9732 89.2308
+## payment       1.3347  1.1473  1.5550
+## type_of_deal  1.6694  1.1991  2.2699</code></pre>
+<p>Results show <code>typeofbids</code> and <code>paymentmethod</code> are 1% significantly correlated to the success rate, and coefficient between type of deals and success rate is significant at 5% level. Specifically, a friendly merger paid in cash is more likely to succeed. Among three variables, typeofbids has the most influence on success rate. When typeofbids increase from 0 to 1, namely from a non-friendly bid to a friendly bid, the odds ratio of success increase by 60.</p>
+</div>
+
+                        </div>
+                    </section>
+            <!-- Disqus Inject -->
+                
+            </div>
+            
+        <!-- Footer -->
+            
+                <!-- Footer -->
+    <footer id="footer">
+        <div class="inner">
+            <ul class="icons">
+                
+                    <li><a href="https://twitter.com/jin_yutao" class="icon alt fa-twitter" target="_blank"><span class="label">Twitter</span></a></li>
+                
+                    <li><a href="https://www.facebook.com/yutao.jin.3192" class="icon alt fa-facebook" target="_blank"><span class="label">Facebook</span></a></li>
+                
+                    <li><a href="https://github.com/YutaoJin" class="icon alt fa-github" target="_blank"><span class="label">GitHub</span></a></li>
+                
+                    <li><a href="www.linkedin.com/in/yutao-jin" class="icon alt fa-linkedin" target="_blank"><span class="label">LinkedIn</span></a></li>
+                
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Yutao Jin 2020</li>
+                
+                <li>Design:  <a href="https://www.html5up.net">HTML5 UP</a></li>
+                
+            </ul>
+        </div>
+    </footer>
+
+            
+        </div>
+
+    <!-- Scripts -->
+        <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.scrolly.min.js"></script>
+    <script src="/js/jquery.scrollex.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/util.js"></script>
+
+    
+
+    <!-- Main JS -->
+    <script src="/js/main.js"></script>
+
+    
+
+    
+
+    </body>
+</html>

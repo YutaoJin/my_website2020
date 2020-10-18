@@ -1,0 +1,315 @@
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Your name">
+	<meta name="generator" content="Hugo 0.75.1" />
+	<title>Diversify Into Alternatives &middot; Portfolio website for Yutao Jin</title>
+	<!-- Stylesheets -->
+	
+	<link rel="stylesheet" href="/css/main.css"/>
+	
+	
+
+	
+
+	<!-- Custom Fonts -->
+	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
+
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+</head>
+
+    <body>
+
+    <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Header -->
+    <header id="header" class="alt">
+        <a href="/" class="logo"><strong>Thomas</strong> <span>Portfolio Website</span></a>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+<!-- Menu -->
+    <nav id="menu">
+        <ul class="links">
+            
+                <li><a href="/">Home</a></li>
+            
+                <li><a href="/blogs">Blogs</a></li>
+            
+                <li><a href="/blogs/ipsum">Generic Blog</a></li>
+            
+                <li><a href="/elements.html">Elements</a></li>
+            
+
+        </ul>
+        <ul class="actions vertical">
+            
+                <li><a href="/blogs" class="button special fit">Get Started</a></li>
+            
+            
+                <li><a href="/" class="button fit">Log In</a></li>
+            
+        </ul>
+    </nav>
+
+        <!-- Main -->
+            <div id="main" class="alt">
+
+                
+                    <section id="one">
+                        <div class="inner">
+                            <header class="major">
+                                <h1>Diversify Into Alternatives</h1>
+                            </header>
+                            
+                            
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<blockquote>
+<p>When covid-19 outbreak, we have entered a new normal with low yield. Under the circumstances, many investors go into a dilemma. On one hand, to hunt for high-yield, investors should add risk to portfolio. On the other hand, with geopolitical risks, covid-19, and economic recession, there are so many uncertainties forward. To solve this dilemma, I think one important step is diversify into alternatives. In this blog, let’s see how alternatives benefit our asset allocation.</p>
+</blockquote>
+<div id="data-initialization" class="section level1">
+<h1>Data Initialization</h1>
+<p>My data comes from <a href="https://am.jpmorgan.com/hk/en/asset-management/adv/insights/portfolio-insights/long-term-capital-market-assumptions/">J.P. Morgan Long-Term Capital Market Assumptions</a>. In this session, I use three datasets. <code>assets</code> contains expected return and annual volatility information of different asset classes. <code>corr</code> and <code>covariance</code> store correlation and covariance data of these assets.</p>
+<pre class="r"><code># Load assets data
+assets &lt;- read_excel(&quot;C:/Data Analytics/my_website/content/projects/SAA/assets_risk_return.xlsx&quot;)
+glimpse(assets)</code></pre>
+<pre><code>## Rows: 59
+## Columns: 4
+## $ Assets            &lt;chr&gt; &quot;U.S. Inflation&quot;, &quot;U.S. Cash&quot;, &quot;U.S. Intermediate...
+## $ Class             &lt;chr&gt; &quot;Fixed Income&quot;, &quot;Fixed Income&quot;, &quot;Fixed Income&quot;, &quot;...
+## $ Expected_Return   &lt;dbl&gt; 2.0, 1.6, 2.2, 0.3, 2.4, 2.8, 3.0, 2.6, 2.2, 3.8,...
+## $ Annual_Volatility &lt;dbl&gt; 1.40, 0.46, 3.45, 11.02, 5.39, 3.42, 2.46, 1.93, ...</code></pre>
+<pre class="r"><code># Load correlation data
+corr &lt;- read_excel(&quot;C:/Data Analytics/my_website/content/projects/alternatives/assets_correlation.xlsx&quot;)
+glimpse(corr)</code></pre>
+<pre><code>## Rows: 17
+## Columns: 18
+## $ Assets                            &lt;chr&gt; &quot;AC World Equity&quot;, &quot;Private Equit...
+## $ `AC World Equity`                 &lt;dbl&gt; 1.00, 0.80, 0.50, 0.50, 0.68, 0.6...
+## $ `Private Equity`                  &lt;dbl&gt; 0.80, 1.00, 0.49, 0.49, 0.84, 0.6...
+## $ `U.S. Core Real Estate`           &lt;dbl&gt; 0.50, 0.49, 1.00, 1.00, 0.56, 0.7...
+## $ `U.S. Value-Added Real Estate`    &lt;dbl&gt; 0.50, 0.49, 1.00, 1.00, 0.56, 0.7...
+## $ `European ex-UK Core Real Estate` &lt;dbl&gt; 0.68, 0.84, 0.56, 0.56, 1.00, 0.6...
+## $ `Asia Pacific Core Real Estate`   &lt;dbl&gt; 0.69, 0.60, 0.75, 0.75, 0.67, 1.0...
+## $ `U.S. REITs`                      &lt;dbl&gt; 0.69, 0.43, 0.61, 0.61, 0.38, 0.6...
+## $ `Global Infrastructure Equity`    &lt;dbl&gt; 0.55, 0.62, 0.47, 0.47, 0.62, 0.5...
+## $ `Global Infrastructure Debt`      &lt;dbl&gt; 0.15, 0.18, 0.17, 0.17, 0.16, 0.2...
+## $ `Diversified Hedge Funds`         &lt;dbl&gt; 0.73, 0.77, 0.46, 0.46, 0.68, 0.6...
+## $ `Event Driven Hedge Funds`        &lt;dbl&gt; 0.85, 0.80, 0.56, 0.56, 0.73, 0.6...
+## $ `Long Bias Hedge Funds`           &lt;dbl&gt; 0.93, 0.82, 0.46, 0.46, 0.70, 0.6...
+## $ `Relative Value Hedge Funds`      &lt;dbl&gt; 0.76, 0.76, 0.55, 0.55, 0.69, 0.6...
+## $ `Macro Hedge Funds`               &lt;dbl&gt; 0.33, 0.30, -0.08, -0.08, 0.21, 0...
+## $ `Direct Lending`                  &lt;dbl&gt; 0.55, 0.65, 0.54, 0.54, 0.61, 0.5...
+## $ Commodities                       &lt;dbl&gt; 0.55, 0.58, 0.38, 0.38, 0.59, 0.5...
+## $ Gold                              &lt;dbl&gt; 0.07, 0.06, -0.03, -0.03, 0.04, 0...</code></pre>
+<pre class="r"><code># Load covariance data
+covariance &lt;- read_excel(&quot;C:/Data Analytics/my_website/content/projects/SAA/assets_covariance.xlsx&quot;)
+glimpse(covariance)</code></pre>
+<pre><code>## Rows: 43
+## Columns: 44
+## $ Assets                                  &lt;chr&gt; &quot;U.S. Inflation&quot;, &quot;U.S. Cas...
+## $ `U.S. Inflation`                        &lt;dbl&gt; 1.4000, 0.0722, -0.4835, -0...
+## $ `U.S. Cash`                             &lt;dbl&gt; 0.0722, 0.4600, 0.2645, 0.1...
+## $ `U.S. Intermediate Treasuries`          &lt;dbl&gt; -0.483, 0.265, 3.450, 4.933...
+## $ `U.S. Long Treasuries`                  &lt;dbl&gt; -0.746, 0.113, 4.933, 11.02...
+## $ TIPS                                    &lt;dbl&gt; 0.275, 0.110, 2.544, 4.316,...
+## $ `U.S. Aggregate Bonds`                  &lt;dbl&gt; -0.394, 0.125, 2.782, 5.034...
+## $ `U.S. Securitized`                      &lt;dbl&gt; -0.278, 0.149, 2.156, 3.593...
+## $ `U.S. Short Duration Government/Credit` &lt;dbl&gt; -0.312, 0.339, 1.987, 2.075...
+## $ `U.S. Long Duration Government/Credit`  &lt;dbl&gt; -0.687, 0.000, 3.917, 9.131...
+## $ `U.S. Inv Grade Corporate Bonds`        &lt;dbl&gt; -0.2600, -0.0497, 1.8138, 4...
+## $ `U.S. Long Corporate Bonds`             &lt;dbl&gt; -0.558, -0.107, 2.278, 6.26...
+## $ `U.S. High Yield Bonds`                 &lt;dbl&gt; 0.441, -0.214, -1.385, -2.1...
+## $ `U.S. Leveraged Loans`                  &lt;dbl&gt; 1.105, -0.261, -2.705, -3.9...
+## $ `World Government Bonds hedged`         &lt;dbl&gt; -0.593, 0.117, 2.698, 4.879...
+## $ `World Government Bonds`                &lt;dbl&gt; -0.300, 0.172, 3.109, 4.293...
+## $ `World ex-U.S. Government Bonds hedged` &lt;dbl&gt; -0.6066, 0.0811, 2.2852, 4....
+## $ `World ex-U.S. Government Bonds`        &lt;dbl&gt; -0.268, 0.153, 2.889, 3.662...
+## $ `Emerging Markets Sovereign Debt`       &lt;dbl&gt; 0.1026, -0.0392, 0.9667, 1....
+## $ `Emerging Markets Local Currency Debt`  &lt;dbl&gt; 0.248, 0.237, 0.972, 0.695,...
+## $ `Emerging Markets Corporate Bonds`      &lt;dbl&gt; 0.4066, -0.0971, 0.2659, 0....
+## $ `U.S. Muni 1-15 Yr Blend`               &lt;dbl&gt; -0.2520, 0.0241, 1.4835, 2....
+## $ `U.S. Muni High Yield`                  &lt;dbl&gt; 0.961, -0.147, -0.352, 0.89...
+## $ `U.S. Large Cap`                        &lt;dbl&gt; 0.224, -0.154, -2.180, -3.7...
+## $ `U.S. Mid Cap`                          &lt;dbl&gt; 0.4299, -0.1917, -2.4747, -...
+## $ `U.S. Small Cap`                        &lt;dbl&gt; 0.258, -0.236, -2.749, -4.7...
+## $ `Euro Area Large Cap`                   &lt;dbl&gt; 0.1645, 0.0314, -1.8074, -3...
+## $ `Japanese Equity`                       &lt;dbl&gt; 0.0455, -0.2348, -1.8579, -...
+## $ `Hong Kong Equity`                      &lt;dbl&gt; -0.0530, 0.0608, -1.4974, -...
+## $ `UK Large Cap`                          &lt;dbl&gt; 0.4370, -0.0557, -2.2867, -...
+## $ `EAFE Equity hedged`                    &lt;dbl&gt; 0.0000, -0.1250, -2.6020, -...
+## $ `EAFE Equity`                           &lt;dbl&gt; 0.2426, -0.0556, -1.9039, -...
+## $ `Emerging Markets Equity`               &lt;dbl&gt; 0.381, 0.156, -1.707, -3.05...
+## $ `AC Asia ex-Japan Equity`               &lt;dbl&gt; 0.0540, 0.0929, -1.5263, -2...
+## $ `AC World Equity`                       &lt;dbl&gt; 0.279, -0.080, -2.045, -3.6...
+## $ `U.S. Equity Value Factor`              &lt;dbl&gt; 0.140, -0.241, -2.273, -4.0...
+## $ `U.S. Equity Momentum Factor`           &lt;dbl&gt; 0.4509, -0.1809, -2.3356, -...
+## $ `U.S. Equity Quality Factor`            &lt;dbl&gt; 0.213, -0.147, -1.875, -3.2...
+## $ `U.S. Equity Minimum Volatility Factor` &lt;dbl&gt; 0.1197, -0.1601, -1.3153, -...
+## $ `U.S. Equity Dividend Yield Factor`     &lt;dbl&gt; 0.1774, -0.2034, -1.6709, -...
+## $ `U.S. Equity Diversified Factor`        &lt;dbl&gt; 0.342, -0.196, -1.948, -3.1...
+## $ `U.S. Convertible Bond hedged`          &lt;dbl&gt; 0.308, -0.199, -1.816, -2.9...
+## $ `Global Convertible Bond`               &lt;dbl&gt; 0.152, -0.131, -1.913, -2.9...
+## $ `Global Credit Sensitive Convertible`   &lt;dbl&gt; 0.4696, -0.0538, -0.6389, -...</code></pre>
+</div>
+<div id="correlation-among-alternatives-and-traditional-assets" class="section level1">
+<h1>Correlation among alternatives and traditional assets</h1>
+<pre class="r"><code># Convert dataframe into correlation matrix
+corr_matrix=data.matrix(corr[1:17,2:18])
+rownames(corr_matrix)&lt;-colnames(corr_matrix)
+
+# Visualize correlation
+
+corrplot(corr_matrix,
+         method=&quot;color&quot;,
+         tl.cex=0.8,
+         tl.col=&quot;black&quot;,
+         addCoef.col=&quot;black&quot;)</code></pre>
+<p><img src="/projects/alternatives/index_files/figure-html/unnamed-chunk-2-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="adding-alternatives-to-portfolio" class="section level1">
+<h1>Adding alternatives to portfolio</h1>
+<pre class="r"><code>selected_assets&lt;-assets %&gt;%
+  filter(Assets==&quot;AC World Equity&quot;|
+           Assets==&quot;World Government Bonds hedged&quot;|
+           Assets==&quot;Macro Hedge Funds&quot;)</code></pre>
+<pre class="r"><code># mean return of asset
+r_equities=assets[assets$Assets==&quot;AC World Equity&quot;,&quot;Expected_Return&quot;]
+r_bonds=assets[assets$Assets==&quot;World Government Bonds hedged&quot;,&quot;Expected_Return&quot;]
+r_alternatives=assets[assets$Assets==&quot;Macro Hedge Funds&quot;,&quot;Expected_Return&quot;]
+
+# standard deviation of portfolio
+sigma_equities=assets[assets$Assets==&quot;AC World Equity&quot;,&quot;Annual_Volatility&quot;]
+sigma_bonds=assets[assets$Assets==&quot;World Government Bonds hedged&quot;,&quot;Annual_Volatility&quot;]
+sigma_alternatives=assets[assets$Assets==&quot;Macro Hedge Funds&quot;,&quot;Annual_Volatility&quot;]
+cov_equities_bonds=covariance[covariance$Assets==&quot;AC World Equity&quot;,&quot;World Government Bonds hedged&quot;]
+cov_equities_alternatives=39.69
+cov_bonds_alternatives=3.72
+
+# Construct equities-bonds portfolio 
+i=0
+while(i&lt;=1){
+  r=r_equities*i+r_bonds*(1-i)
+  sigma=sqrt(i^2*sigma_equities^2+(1-i)^2*sigma_bonds^2+i*(1-i)*2*cov_equities_bonds)
+  assets&lt;-rbind(assets,data.frame(Assets=paste(round(i*100),&quot;/&quot;,round(100-i*100)),Class=&quot;Portfolio&quot;,Expected_Return=r,Annual_Volatility=sigma))
+  i=i+0.1
+}</code></pre>
+<pre class="r"><code># Filter necessary data
+equities_bonds&lt;-assets %&gt;%
+  filter(Class==&quot;Portfolio&quot;|
+           Assets==&quot;AC World Equity&quot;|
+           Assets==&quot;World Government Bonds hedged&quot;)
+
+# Create the plot
+plot1&lt;-ggplot(equities_bonds,aes(x=Annual_Volatility,y=Expected_Return))+
+  
+  # Line of efficient frontier
+  geom_line()+
+  
+  # Point of 60/40 portfolio, equities, and bonds
+  geom_point(data=equities_bonds[equities_bonds$Assets==&quot;30 / 70&quot;,],size=3,colour=&quot;blue&quot;)+
+  geom_point(data=equities_bonds[equities_bonds$Assets==&quot;50 / 50&quot;,],size=3,colour=&quot;blue&quot;)+
+  geom_point(data=equities_bonds[equities_bonds$Assets==&quot;70 / 30&quot;,],size=3,colour=&quot;blue&quot;)+
+  geom_point(data=equities_bonds[equities_bonds$Assets==&quot;AC World Equity&quot;,],size=2)+
+  geom_point(data=equities_bonds[equities_bonds$Assets==&quot;World Government Bonds hedged&quot;,],size=2)+
+  
+  # Add label to points
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets==&quot;30 / 70&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour=&quot;Black&quot;,vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets==&quot;50 / 50&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour=&quot;Black&quot;,vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets==&quot;70 / 30&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour=&quot;Black&quot;,vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets==&quot;AC World Equity&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour=&quot;Black&quot;)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets==&quot;World Government Bonds hedged&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour=&quot;Black&quot;,hjust=-0.05)+
+  
+  # Set title, and axis label
+  labs(title=&quot;Equities-Bonds Portfolio&quot;,
+       x=&quot;Volatility&quot;,
+       y=&quot;Compounded return (%)&quot;)+
+  theme_minimal(base_size=9)
+
+plot1</code></pre>
+<p><img src="/projects/alternatives/index_files/figure-html/unnamed-chunk-5-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot2&lt;-plot1+
+  geom_point(data=selected_assets[selected_assets$Class==&quot;Alternatives&quot;,],aes(x=Annual_Volatility,y=Expected_Return),size=2)+
+  geom_text_repel(data=selected_assets[selected_assets$Class==&quot;Alternatives&quot;,],aes(x=Annual_Volatility,y=Expected_Return,label=Assets))
+
+plot2</code></pre>
+<p><img src="/projects/alternatives/index_files/figure-html/unnamed-chunk-6-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>
+<div id="reference" class="section level1">
+<h1>Reference</h1>
+</div>
+
+                        </div>
+                    </section>
+            <!-- Disqus Inject -->
+                
+            </div>
+            
+        <!-- Footer -->
+            
+                <!-- Footer -->
+    <footer id="footer">
+        <div class="inner">
+            <ul class="icons">
+                
+                    <li><a href="https://twitter.com/jin_yutao" class="icon alt fa-twitter" target="_blank"><span class="label">Twitter</span></a></li>
+                
+                    <li><a href="https://www.facebook.com/yutao.jin.3192" class="icon alt fa-facebook" target="_blank"><span class="label">Facebook</span></a></li>
+                
+                    <li><a href="https://github.com/YutaoJin" class="icon alt fa-github" target="_blank"><span class="label">GitHub</span></a></li>
+                
+                    <li><a href="www.linkedin.com/in/yutao-jin" class="icon alt fa-linkedin" target="_blank"><span class="label">LinkedIn</span></a></li>
+                
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Yutao Jin 2020</li>
+                
+                <li>Design:  <a href="https://www.html5up.net">HTML5 UP</a></li>
+                
+            </ul>
+        </div>
+    </footer>
+
+            
+        </div>
+
+    <!-- Scripts -->
+        <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.scrolly.min.js"></script>
+    <script src="/js/jquery.scrollex.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/util.js"></script>
+
+    
+
+    <!-- Main JS -->
+    <script src="/js/main.js"></script>
+
+    
+
+    
+
+    </body>
+</html>

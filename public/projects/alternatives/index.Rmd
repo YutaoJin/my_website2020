@@ -1,0 +1,199 @@
+---
+title: "Diversify Into Alternatives"
+author: "Yutao Jin"
+date: "13 October 2020"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(ggthemes)
+library(readxl)
+library(ggrepel)
+library(corrplot)
+library(quadprog)
+```
+
+
+> When covid-19 outbreak, we have entered a new normal with low yield. Under the circumstances, many investors go into a dilemma. On one hand, to hunt for high-yield, investors should add risk to portfolio. On the other hand, with geopolitical risks, covid-19, and economic recession, there are so many uncertainties forward. To solve this dilemma, I think one important step is diversify into alternatives. In this blog, let's see how alternatives benefit our asset allocation.
+
+# Data Initialization
+
+My data comes from [J.P. Morgan Long-Term Capital Market Assumptions](https://am.jpmorgan.com/hk/en/asset-management/adv/insights/portfolio-insights/long-term-capital-market-assumptions/). In this session, I use three datasets. `assets` contains expected return and annual volatility information of different asset classes. `corr` and `covariance` store correlation and covariance data of these assets.
+
+```{r load-assets-data}
+# Load assets data
+assets <- read_excel("C:/Data Analytics/my_website/content/projects/SAA/assets_risk_return.xlsx")
+glimpse(assets)
+```
+
+```{r load-correlation-data}
+# Load correlation data
+corr <- read_excel("C:/Data Analytics/my_website/content/projects/alternatives/assets_correlation.xlsx")
+glimpse(corr)
+```
+
+```{r}
+# Load covariance data
+covariance <- read_excel("C:/Data Analytics/my_website/content/projects/SAA/assets_covariance.xlsx")
+glimpse(covariance)
+```
+
+
+# Correlation among alternatives and traditional assets
+
+
+
+
+```{r,fig.width=10,fig.height=10}
+# Convert dataframe into correlation matrix
+corr_matrix=data.matrix(corr[1:17,2:18])
+rownames(corr_matrix)<-colnames(corr_matrix)
+
+# Visualize correlation
+
+corrplot(corr_matrix,
+         method="color",
+         tl.cex=0.8,
+         tl.col="black",
+         addCoef.col="black")
+```
+
+
+
+# Adding alternatives to portfolio
+
+
+```{r}
+selected_assets<-assets %>%
+  filter(Assets=="AC World Equity"|
+           Assets=="World Government Bonds hedged"|
+           Assets=="Macro Hedge Funds")
+```
+
+
+```{r}
+# mean return of asset
+r_equities=assets[assets$Assets=="AC World Equity","Expected_Return"]
+r_bonds=assets[assets$Assets=="World Government Bonds hedged","Expected_Return"]
+r_alternatives=assets[assets$Assets=="Macro Hedge Funds","Expected_Return"]
+
+# standard deviation of portfolio
+sigma_equities=assets[assets$Assets=="AC World Equity","Annual_Volatility"]
+sigma_bonds=assets[assets$Assets=="World Government Bonds hedged","Annual_Volatility"]
+sigma_alternatives=assets[assets$Assets=="Macro Hedge Funds","Annual_Volatility"]
+cov_equities_bonds=covariance[covariance$Assets=="AC World Equity","World Government Bonds hedged"]
+cov_equities_alternatives=39.69
+cov_bonds_alternatives=3.72
+
+# Construct equities-bonds portfolio 
+i=0
+while(i<=1){
+  r=r_equities*i+r_bonds*(1-i)
+  sigma=sqrt(i^2*sigma_equities^2+(1-i)^2*sigma_bonds^2+i*(1-i)*2*cov_equities_bonds)
+  assets<-rbind(assets,data.frame(Assets=paste(round(i*100),"/",round(100-i*100)),Class="Portfolio",Expected_Return=r,Annual_Volatility=sigma))
+  i=i+0.1
+}
+
+```
+
+```{r}
+# Filter necessary data
+equities_bonds<-assets %>%
+  filter(Class=="Portfolio"|
+           Assets=="AC World Equity"|
+           Assets=="World Government Bonds hedged")
+
+# Create the plot
+plot1<-ggplot(equities_bonds,aes(x=Annual_Volatility,y=Expected_Return))+
+  
+  # Line of efficient frontier
+  geom_line()+
+  
+  # Point of 60/40 portfolio, equities, and bonds
+  geom_point(data=equities_bonds[equities_bonds$Assets=="30 / 70",],size=3,colour="blue")+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="50 / 50",],size=3,colour="blue")+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="70 / 30",],size=3,colour="blue")+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="AC World Equity",],size=2)+
+  geom_point(data=equities_bonds[equities_bonds$Assets=="World Government Bonds hedged",],size=2)+
+  
+  # Add label to points
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="30 / 70",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="50 / 50",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="70 / 30",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",vjust=-1)+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="AC World Equity",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black")+
+  geom_text_repel(data=equities_bonds[equities_bonds$Assets=="World Government Bonds hedged",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets),colour="Black",hjust=-0.05)+
+  
+  # Set title, and axis label
+  labs(title="Equities-Bonds Portfolio",
+       x="Volatility",
+       y="Compounded return (%)")+
+  theme_minimal(base_size=9)
+
+plot1
+```
+
+```{r}
+plot2<-plot1+
+  geom_point(data=selected_assets[selected_assets$Class=="Alternatives",],aes(x=Annual_Volatility,y=Expected_Return),size=2)+
+  geom_text_repel(data=selected_assets[selected_assets$Class=="Alternatives",],aes(x=Annual_Volatility,y=Expected_Return,label=Assets))
+
+plot2
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Reference
+
+
+
+
+
+
