@@ -1,0 +1,116 @@
+---
+title: "About Me"
+author: "Yutao Jin"
+date: "12 October 2020"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+```
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("C:/Data Analytics/my_website/content/projects/resume/coco.png")
+```
+
+
+# About Me
+
+I am Yutao Jin (Thomas), currently a masters in financial analysis student at London Business School, and I've decided to pursue a career in wealth management or asset management. My vision is to support entrepreneurs and their businesses, for not only current success but also permanent inheritance, making their contribution long-live stories.
+
+With academic training in financial literacy and 18-months practical internship experience, my main skillset is focused on economic analysis, asset allocation, and financial planning. My expected role is financial planning or portfolio management, that has more exposure to markets and meanwhile partner with client-facing relationship managers to provide customized solutions to clients.
+
+Please feel free to connect and contact me at: yjin.mfa2021@london.edu
+
+
+# Education Background
+
+I completed my undergraduate studies and was awarded Bachelor in Economics at Shanghai University of Finance and Economics. During the first summer holiday, I attended the exchange summer session at University of Pennsylvania. I graduated this year and started pursusing my double degree in finance at London Business School and Fudan University. Currently, I am seeking summer internship opportunities and I will start my full time job in 2022.
+
+
+# Work Experience
+
+## China International Capital Corporation (CICC), Shanghai, China
+
+### Wealth Management | Financial Planning | Asset Allocation Research
+
+From December 2019 to August 2020, I spent 9 months working at CICC wealth management financial planning team. We provided tailored asset allocation solution to our high-net-worth, ultra-high, and family office clients. My responsibilities and achievements include:
+
+* Devised customized asset allocation and investment solution based on client profile; prepared tailored wealth management pitchbook; expanded Asset Under Management to RMB 10b in 12 months
+* Built models to review cross-asset performance; established analytical framework of both domestic and global economics; reported findings to 16-member financial planning team regularly
+* Quantified business cycle with 27 indicators; applied machine learning techniques to develop
+dynamic asset allocation strategy; improved return of static model portfolio by 2.28% in 1H20
+* Researched China Wealth Management market and traced industry development trends; proposed
+solutions on cooperation with commercial banks and trusts; appreciated by Managing Director
+
+### Global Markets | Equity Derivatives Solution | Product Sales
+
+From September 2019 to December 2019, I spent 3 months at Sales & Trading division, providing equity derivatives solutions to institutional clients. After that I transferred to wealth management division because I feel more interested and comfortable working at buyside and under the top-down investment style. My responsibilities and achievements during this internship include:
+
+* Drafted and modified pitch materials, including corporate profile, financial product introduction, and risk control details; assisted Sales to establish and maintain relationships with clients
+* Informed market update and investment ideas to institutional clients; advised equity derivatives
+solutions for hedge funds to meet portfolio management needs; promoted transactions
+* Conducted 40-odds cold calls to commercial banks; introduced equity derivatives services; invited 12 potential clients to non-deal roadshow
+
+
+## Guotai Junan Securities, Shanghai, China
+
+### Internet Finance | Digital Wealth Management | Product
+
+In 2019, I did summer intern at Guotai Junan Securities. This is an amazing experience for me. In recent years, fintech is becoming more and more popular, and Guotai Junan Securities is one of the leading securities companies in China that has great input into technology. We operate a digital wealth management platform called JunHong App. The culture and environment of this division is just like that of internet firms. My responsbilities mainly include:
+
+* Contributed to develop and operate the digital wealth management platform; formulated product
+innovation and marketing strategies; coordinated IT and designers to realize proposals
+* Participated in team discussions and brainstorming; proposed gamification marketing with use of structured notes; adopted by manager and received positive feedback
+* Built a customer model to identify different user personas; provided quantitative and qualitative
+analytics around precision marketing strategy and market segmentation
+
+## Shenwan Hongyuan Securities, Shanghai, China
+
+### Equity Research | Health Care
+
+My first internship was at Shenwan Hongyuan Securities. I spent 3 months there, focusing on health care industry. My responsiblitities include:
+
+* Valued HENGRUI MEDICINE, a leading company in China’s pharmaceutical industry; researched
+competitive landscape and development perspective of industry; wrote a 41-page research report
+* Collected information and data from common databases (Bloomberg/Capital IQ/Wind); updated
+monitoring system and conducted data analysis; delivered weekly report
+* Assisted Senior Associates to present daily market update on morning call and conference calls; communicated and discussed findings with the Sales team
+
+# Additional Information
+
+* Expressed asset allocation views, pitched a range of financial products, and presented
+investment solutions on UBS Wealth Management challenge; won Best Return Award
+* Collaborated in a team of 4; prepared full set of pitching deck and presented investment solutions; won Champion of J.P. Morgan Asset & Wealth Management Challenge
+* Fulfilled requirements of Deutsche Bank Academy Programme 2020; learned about company’s
+corporate banking and private banking services; awarded certificate
+* Managed a 21-member college football team; scheduled and organised training and matches;
+played midfielder and won 4 trophies
+* Awards: Honourable Mention in Mathematical Contest in Modelling; 2nd Prize in China
+Mathematical Contest in Modelling; 1st Prize in National College Mathematical Contest
+* Certificates: ACCA Advanced Diploma in Accounting and Business
+* IT skills: programming in Visual Basic and Python; data analysis in STATA, R and Python
+* Languages: fluent English; native Chinese
+
+
+# Contact Me
+
+* Email: yjin.mfa2021@london.edu
+* Phone: +44 07579 946359
+* Linkedin: [https://www.linkedin.com/in/yutao-jin/](https://www.linkedin.com/in/yutao-jin/)
+
+
+
+
